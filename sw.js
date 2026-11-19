@@ -1,6 +1,6 @@
 /* Keeps the app's own files so it opens instantly and works without a connection.
    Pills, history and photos are not touched here: they live in the phone's own storage. */
-var CACHE = "despesas-v3";
+var CACHE = "despesas-v6";
 var SHELL = ["./", "index.html", "logo.png", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", function (e) {
@@ -20,7 +20,15 @@ self.addEventListener("activate", function (e) {
 self.addEventListener("fetch", function (e) {
   var req = e.request;
   if (req.method !== "GET") return;
-  if (new URL(req.url).origin !== self.location.origin) return;
+  var u = new URL(req.url);
+  /* Firebase libraries: keep a copy so the app still starts without internet */
+  if (u.origin === "https://www.gstatic.com" && u.pathname.indexOf("/firebasejs/") === 0) {
+    e.respondWith(caches.match(req).then(function (hit) {
+      return hit || fetch(req).then(function (res) { var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(req, copy); }); return res; });
+    }));
+    return;
+  }
+  if (u.origin !== self.location.origin) return;
   e.respondWith(
     fetch(req)
       .then(function (res) {

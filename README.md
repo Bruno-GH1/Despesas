@@ -21,3 +21,11 @@ Aplicação instalável (PWA) pronta para GitHub Pages.
 ## Importante
 
 As despesas ficam guardadas apenas no dispositivo (localStorage). No iPhone, a app do ecrã inicial tem armazenamento separado do Safari, por isso começa vazia.
+
+## Sincronização (PC e telemóvel)
+
+Usa o Firebase (Authentication por email + Realtime Database, região Europa). Para funcionar na app publicada:
+
+- Em Firebase → Authentication → Definições → Domínios autorizados, tem de estar `bruno-gh1.github.io`.
+- Em Realtime Database → Regras, cada utilizador só lê e escreve em `users/<o seu id>`.
+- Sem sessão iniciada, a app continua a funcionar só neste aparelho. Ao entrar pela primeira vez, as despesas já guardadas no aparelho são enviadas para a conta.
