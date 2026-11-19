@@ -83,12 +83,21 @@ button{cursor:pointer}
 .acct{margin-top:0;margin-bottom:16px;padding:16px 20px}
 .loginf{display:grid;gap:10px;grid-template-columns:1fr 1fr auto}
 .loginf input{min-width:0;padding:10px 12px;border-radius:16px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
-.acctin{display:flex;gap:12px;align-items:center;justify-content:space-between;font-size:.9rem}
+header h1{flex:1 1 220px;min-width:0}
+.acc{position:relative}
+.avatar{position:relative;width:36px;height:36px;border-radius:50%;border:2px solid var(--line);background:var(--surface);color:var(--bank);font-weight:700;font-size:.95rem;display:grid;place-items:center;padding:0}
+.avatar:hover{border-color:var(--bank)}
+.sdot{position:absolute;right:-2px;bottom:-2px;width:11px;height:11px;border-radius:50%;border:2px solid var(--bg);background:#4caf7d}
+.sdot.off{background:#e3b341}
+.pop{position:absolute;right:0;top:44px;z-index:20;min-width:210px;max-width:min(280px,80vw);background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:12px 14px;box-shadow:0 10px 26px color-mix(in srgb,var(--bank) 20%,transparent);display:grid;gap:4px}
+.pop b{font-size:.9rem;overflow-wrap:anywhere}
+.pop small{color:var(--mute);font-size:.8rem;margin-bottom:8px}
+.pop .tabsbtn{justify-self:start}
 .tabsbtn{padding:6px 14px;border-radius:99px;border:1px solid var(--line);background:none}
 @media (max-width:720px){.loginf{grid-template-columns:1fr}}
 .altrow{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px}
 .linkbtn{background:none;border:0;padding:6px 0;color:var(--bank);text-decoration:underline;font-size:.9rem}
-@media (max-width:720px){.cards{grid-template-columns:1fr}.fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.fields label:first-child{grid-column:1/-1}.add{grid-column:1/-1}}
+@media (max-width:720px){h1{font-size:1.45rem}.month{width:100%;justify-content:space-between}.cards{grid-template-columns:1fr}.fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.fields label:first-child{grid-column:1/-1}.add{grid-column:1/-1}}
 @media (prefers-reduced-motion:reduce){.bar i{transition:none}}
 </style>
 </head>
@@ -106,12 +115,19 @@ button{cursor:pointer}
     </form>
     <div class="altrow"><button type="button" class="linkbtn" id="l-mode">Criar conta nova</button><button type="button" class="linkbtn" id="l-reset">Esqueci a palavra-passe</button></div>
   </div>
-  <div id="acct-in" class="acctin" hidden><span id="acct-status"></span><button type="button" class="tabsbtn" id="logout">Sair</button></div>
   <p id="acct-msg" class="empty" role="status" style="padding:8px 0 0"></p>
 </section>
 <p id="warn" class="warnbar" role="alert" hidden>Este navegador não deixa guardar dados (modo privado?). As despesas perdem-se ao fechar. Abre a app no navegador normal.</p>
 <header>
   <h1>As minhas despesas 🤎</h1>
+  <div class="acc" id="acc" hidden>
+    <button type="button" class="avatar" id="acc-btn" aria-haspopup="true" aria-expanded="false" aria-label="Conta e sincronização"><span id="acc-ini">B</span><i class="sdot on" id="acc-dot"></i></button>
+    <div class="pop" id="acc-pop" role="menu" hidden>
+      <b id="acc-mail"></b>
+      <small id="acc-st"></small>
+      <button type="button" class="tabsbtn" id="logout" role="menuitem">Sair</button>
+    </div>
+  </div>
   <div class="month">
     <button class="ic" id="prev" aria-label="Mês anterior">‹</button>
     <span id="mlabel"></span>
@@ -332,12 +348,22 @@ let cu=null,fauth=null,fdb=null,remoteRef=null,online=false;
 const inflight=new Set();
 function clean(i){return{id:i.id,date:i.date,desc:i.desc,amount:i.amount,card:i.card,cat:i.cat}}
 function showAcct(){
-  $('acct').hidden=false;
   const has=!!fauth;
-  $('acct-out').hidden=!has||!!cu;$('acct-in').hidden=!cu;
+  $('acct').hidden=!!cu;
+  $('acct-out').hidden=!has||!!cu;
   if(!has){$('acct-msg').textContent='Sem ligação ao serviço de sincronização. A app funciona só neste aparelho.'}
-  if(cu){$('acct-status').textContent=(online?'Sincronizado · ':'Sem ligação, guardado no aparelho · ')+(cu.email||'')}
+  $('acc').hidden=!cu;
+  if(cu){
+    $('acc-ini').textContent=(cu.email||'?').charAt(0).toUpperCase();
+    $('acc-dot').className='sdot '+(online?'on':'off');
+    $('acc-mail').textContent=cu.email||'';
+    if(!$('acc-st').dataset.err)$('acc-st').textContent=online?'Sincronizado':'Sem ligação · guardado no aparelho';
+  }else{closePop()}
 }
+function closePop(){const pp=$('acc-pop');if(pp){pp.hidden=true;$('acc-btn').setAttribute('aria-expanded','false')}}
+$('acc-btn').onclick=e=>{e.stopPropagation();const pp=$('acc-pop');pp.hidden=!pp.hidden;$('acc-btn').setAttribute('aria-expanded',String(!pp.hidden))};
+document.addEventListener('click',e=>{if(!$('acc').contains(e.target))closePop()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePop()});
 function ackItem(id){sync();const i=S.items.find(x=>x.id==id);if(i){delete i._p;save()}}
 function pushPending(){
   if(!cu||!fdb)return;
@@ -389,7 +415,7 @@ function startSync(u){
   }
   if(remoteRef)remoteRef.off();
   remoteRef=fdb.ref('users/'+u.uid);
-  remoteRef.on('value',snap=>applyRemote(snap.val()),err=>{$('acct-msg').textContent='Não consegui ler os dados na conta ('+(err&&err.code||'erro')+'). Verifica as regras da base de dados.'});
+  remoteRef.on('value',snap=>applyRemote(snap.val()),err=>{const t='Não consegui ler os dados na conta ('+(err&&err.code||'erro')+'). Verifica as regras da base de dados.';$('acct-msg').textContent=t;$('acc-st').dataset.err='1';$('acc-st').textContent=t});
 }
 setInterval(()=>{if(cu)pushPending()},15000);
 window.addEventListener('online',()=>{if(cu)pushPending()});
@@ -435,7 +461,7 @@ $('login').onsubmit=e=>{
     .then(()=>{$('l-pass').value='';$('l-pass2').value='';setMode(false);$('acct-msg').textContent=''})
     .catch(err=>{$('acct-msg').textContent=AUTHERR[err&&err.code]||'Não foi possível entrar. Tenta de novo.'});
 };
-$('logout').onclick=()=>{if(fauth)fauth.signOut().then(()=>{$('acct-msg').textContent='Saíste da conta. Os dados continuam guardados neste aparelho.'})};
+$('logout').onclick=()=>{closePop();if(fauth)fauth.signOut().then(()=>{delete $('acc-st').dataset.err;$('acct-msg').textContent='Saíste da conta. Os dados continuam guardados neste aparelho.'})};
 
 function stamp(){const d=new Date();return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())}
 $('bk-save').onclick=async()=>{
