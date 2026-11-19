@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>As minhas despesas</title>
+<link rel="icon" type="image/png" sizes="256x256" href="logo.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#8b5a3c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Despesas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap">
+<style>
+:root{--bg:#fff;--surface:#fff;--ink:#3e2a20;--mute:#78604f;--line:#e9e1da;--meal:#e6d0a0;--meal-soft:#fff;--bank:#8b5a3c;--bank-soft:#fff;--warn:#c0392b;--on:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#231a15;--surface:#2e231c;--ink:#f6ece2;--mute:#cdb8a6;--line:#483a2f;--meal:#e8c25a;--meal-soft:#2e231c;--bank:#d6a27a;--bank-soft:#2e231c;--warn:#ff8a6b;--on:#261a12;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#231a15;--surface:#2e231c;--ink:#f6ece2;--mute:#cdb8a6;--line:#483a2f;--meal:#e8c25a;--meal-soft:#2e231c;--bank:#d6a27a;--bank-soft:#2e231c;--warn:#ff8a6b;--on:#261a12;color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+button,label,select{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font:600 16px/1.45 'Quicksand','Nunito',system-ui,-apple-system,'Segoe UI',sans-serif}
+main{min-width:0;max-width:980px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+h1{font-size:1.7rem;font-weight:700;margin:0;color:var(--bank)}
+.month{display:flex;align-items:center;gap:6px}
+.month span{min-width:150px;text-align:center;font-weight:600}
+.month span::first-letter{text-transform:uppercase}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.ic{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface)}
+:focus-visible{outline:3px solid var(--bank);outline-offset:2px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{border-radius:28px;padding:22px;background:var(--soft);border:2px solid color-mix(in srgb,var(--c) 70%,transparent);box-shadow:0 8px 22px color-mix(in srgb,var(--c) 14%,transparent)}
+.card.meal{--soft:var(--meal-soft);--c:var(--meal)}
+.card.bank{--soft:var(--bank-soft);--c:var(--bank)}
+.card h2{margin:0;font-size:1rem;font-weight:600;color:var(--c)}
+.big{font-size:2.4rem;font-weight:800;letter-spacing:-.03em;margin:6px 0 2px;color:var(--ink)}
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden;margin:10px 0 6px}
+.bar i{display:block;height:100%;background:var(--c);border-radius:99px;transition:width .3s}
+.bar.over i{background:var(--warn)}
+.sub{font-size:.9rem;color:var(--mute);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.sub.over b{color:var(--warn)}
+.bud{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:.9rem}
+.bud input{width:110px;padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
+.cats{margin:14px 0 0;padding:0;list-style:none;font-size:.9rem}
+.cats li{display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid color-mix(in srgb,var(--c) 25%,transparent)}
+.panel{background:var(--surface);border:2px solid var(--line);border-radius:28px;padding:22px;margin-top:18px;box-shadow:0 8px 22px color-mix(in srgb,var(--meal) 10%,transparent)}
+.panel h3{margin:0 0 14px;font-size:1.05rem}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:99px;overflow:hidden;margin-bottom:14px}
+.seg label{padding:8px 14px;cursor:pointer;font-weight:600;font-size:.9rem}
+.seg input{position:absolute;opacity:0}
+.seg input:checked+span{color:inherit}
+.seg label:has(input:checked){background:var(--c,var(--meal));color:var(--on)}
+.seg label:has(input[value=meal]:checked){color:#2e1a12}
+.seg label:has(input[value=bank]:checked){background:var(--bank)}
+.seg label:has(input:focus-visible){outline:3px solid var(--bank);outline-offset:-3px}
+.fields{display:grid;grid-template-columns:2fr 1fr 1.3fr 1fr auto;gap:10px;align-items:end}
+.fields label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--mute)}
+.fields input,.fields select{width:100%;max-width:100%;padding:10px 12px;border-radius:16px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-width:0}
+.add{padding:11px 22px;border:0;border-radius:99px;background:var(--bank);color:var(--on);font-weight:700;box-shadow:0 4px 12px color-mix(in srgb,var(--bank) 35%,transparent)}
+.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.tabs button{padding:6px 14px;border-radius:99px;border:1px solid var(--line);background:none}
+.tabs button[aria-pressed=true]{background:var(--bank);color:var(--on);border-color:var(--bank)}
+.row{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.meal{background:var(--meal)}.dot.bank{background:var(--bank)}
+.row small{display:block;color:var(--mute)}
+.amt{font-weight:600;font-variant-numeric:tabular-nums}
+.del{border:0;background:none;color:var(--mute);font-size:1.4rem;min-width:40px;min-height:40px;border-radius:12px}
+.del:hover{color:var(--warn)}
+.empty{color:var(--mute);padding:18px 0 4px}
+.total{display:flex;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:2px solid var(--line);font-weight:600}
+.cb{margin-bottom:12px}.cbh{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px}.cbh small{color:var(--mute);font-weight:400;margin-left:6px}.cbar{display:flex;height:12px;border-radius:99px;overflow:hidden;min-width:6px}.cbar i.meal{background:var(--meal)}.cbar i.bank{background:var(--bank)}.leg{display:flex;gap:16px;font-size:.85rem;color:var(--mute);margin:-6px 0 14px;flex-wrap:wrap}.leg span{display:flex;align-items:center;gap:6px}
+.donut{display:flex;gap:28px;align-items:center;flex-wrap:wrap}.donut svg{width:210px;height:210px;flex:none;color:var(--ink);transform:rotate(0deg)}.dl{list-style:none;margin:0;padding:0;flex:1;min-width:240px}.dl li{display:grid;grid-template-columns:14px 1fr auto auto;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}.dl li:first-child{border-top:0}.dl i{width:14px;height:14px;border-radius:4px}.dl b{min-width:42px;text-align:right}
+@media (max-width:720px){.cards{grid-template-columns:1fr}.fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.fields label:first-child{grid-column:1/-1}.add{grid-column:1/-1}}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>As minhas despesas 🤎</h1>
+  <div class="month">
+    <button class="ic" id="prev" aria-label="Mês anterior">‹</button>
+    <span id="mlabel"></span>
+    <button class="ic" id="next" aria-label="Mês seguinte">›</button>
+  </div>
+</header>
+
+<section class="cards" id="cards" aria-label="Resumo por cartão"></section>
+
+<section class="panel">
+  <h3>Onde gastei mais</h3>
+  <div class="leg"><span><i class="dot meal"></i>Cartão refeição</span><span><i class="dot bank"></i>Cartão bancário</span></div>
+  <div id="brk"></div>
+</section>
+
+<section class="panel">
+  <h3>Adicionar despesa</h3>
+  <form id="f">
+    <div class="seg" role="radiogroup" aria-label="Cartão">
+      <label><input type="radio" name="card" value="meal" checked><span>Cartão refeição</span></label>
+      <label><input type="radio" name="card" value="bank"><span>Cartão bancário</span></label>
+    </div>
+    <div class="fields">
+      <label>Descrição<input id="desc" required maxlength="60" placeholder="Ex.: Pingo Doce"></label>
+      <label>Valor (€)<input id="amount" type="number" step="0.01" min="0.01" required inputmode="decimal"></label>
+      <label>Categoria<select id="cat"></select></label>
+      <label>Data<input id="date" type="date" required></label>
+      <button class="add" type="submit">Adicionar</button>
+    </div>
+  </form>
+</section>
+
+<section class="panel">
+  <h3>Movimentos do mês</h3>
+  <div class="tabs" id="tabs">
+    <button data-f="all" aria-pressed="true">Todos</button>
+    <button data-f="meal" aria-pressed="false">Refeição</button>
+    <button data-f="bank" aria-pressed="false">Bancário</button>
+  </div>
+  <div id="list"></div>
+  <div class="total"><span>Total do mês</span><span id="tot" class="amt"></span></div>
+</section>
+<section class="panel">
+  <h3>Cartão refeição: percentagem por categoria</h3>
+  <div class="donut" id="donut-meal"></div>
+</section>
+
+<section class="panel">
+  <h3>Cartão bancário: percentagem por categoria</h3>
+  <div class="donut" id="donut-bank"></div>
+</section>
+</main>
+
+<script>
+const CATS={meal:['Supermercado','Restaurantes','Café e snacks','Extras'],bank:['Casa','Passe','Carro','Poupanças','Subscrições','Extras']};
+const NAME={meal:'Cartão refeição',bank:'Cartão bancário'};
+const KEY='despesas-v1';
+let S={items:[],budgets:{}};
+try{const r=localStorage.getItem(KEY);if(r)S=JSON.parse(r)}catch(e){}
+const MIG={'Casa e contas':'Casa','Transportes':'Passe','Saúde':'Extras','Lazer':'Extras','Compras':'Extras','Outros':'Extras'};
+(S.items||[]).forEach(i=>{i.cat=MIG[i.cat]||i.cat});
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const pad=n=>String(n).padStart(2,'0');
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+let ym=today().slice(0,7),filter='all';
+const eur=n=>new Intl.NumberFormat('pt-PT',{style:'currency',currency:'EUR'}).format(n);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=id=>document.getElementById(id);
+const monthItems=()=>S.items.filter(i=>i.date.startsWith(ym));
+const sum=a=>a.reduce((t,i)=>t+i.amount,0);
+
+function renderCards(){
+  const its=monthItems();
+  $('cards').innerHTML=['meal','bank'].map(k=>{
+    const mine=its.filter(i=>i.card===k),spent=sum(mine);
+    const bud=(S.budgets[ym]||{})[k]||0,over=bud>0&&spent>bud;
+    const pct=bud?Math.min(100,spent/bud*100):0;
+    const by={};mine.forEach(i=>by[i.cat]=(by[i.cat]||0)+i.amount);
+    const cats=Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<li><span>${esc(c)}</span><span class="amt">${eur(v)}</span></li>`).join('');
+    const msg=!bud?'Define o valor do mês':over?`Excedeste <b>${eur(spent-bud)}</b>`:`Restam <b>${eur(bud-spent)}</b>`;
+    return `<article class="card ${k}">
+      <h2>${NAME[k]}</h2>
+      <div class="big">${eur(spent)}</div>
+      <div class="bar ${over?'over':''}" role="progressbar" aria-valuenow="${Math.round(pct)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
+      <div class="sub ${over?'over':''}"><span>${msg}</span><span>${bud?Math.round(spent/bud*100)+'%':''}</span></div>
+      <div class="bud"><label for="b-${k}">${k==='meal'?'Carregamento':'Orçamento'} do mês</label><input id="b-${k}" type="number" min="0" step="0.01" inputmode="decimal" value="${bud||''}" placeholder="0,00"></div>
+      <ul class="cats">${cats}</ul></article>`;
+  }).join('');
+  ['meal','bank'].forEach(k=>$('b-'+k).onchange=e=>{
+    S.budgets[ym]=S.budgets[ym]||{};S.budgets[ym][k]=Math.max(0,parseFloat(e.target.value)||0);save();renderCards();
+  });
+}
+
+function renderList(){
+  let its=monthItems().sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+  const all=sum(its);
+  if(filter!=='all')its=its.filter(i=>i.card===filter);
+  $('list').innerHTML=its.length?its.map(i=>`<div class="row">
+    <span class="dot ${i.card}" title="${NAME[i.card]}"></span>
+    <div>${esc(i.desc)}<small>${esc(i.cat)} · ${i.date.split('-').reverse().join('/')} · ${NAME[i.card]}</small></div>
+    <span class="amt">${eur(i.amount)}</span>
+    <button class="del" data-id="${i.id}" aria-label="Apagar ${esc(i.desc)}">×</button></div>`).join('')
+    :'<p class="empty">Ainda não há despesas neste filtro. Adiciona a primeira acima.</p>';
+  $('tot').textContent=eur(filter==='all'?all:sum(its));
+  document.querySelectorAll('.del').forEach(b=>b.onclick=()=>{
+    S.items=S.items.filter(i=>i.id!==+b.dataset.id);save();render();
+  });
+}
+
+function renderMonth(){
+  const [y,m]=ym.split('-');
+  $('mlabel').textContent=new Date(+y,+m-1,1).toLocaleDateString('pt-PT',{month:'long',year:'numeric'});
+  const d=$('date');d.value=today().startsWith(ym)?today():ym+'-01';
+}
+function renderBreak(){
+  const by={};
+  monthItems().forEach(i=>{const o=by[i.cat]=by[i.cat]||{meal:0,bank:0};o[i.card]+=i.amount});
+  const rows=Object.entries(by).map(([c,o])=>[c,o,o.meal+o.bank]).sort((a,b)=>b[2]-a[2]);
+  const tot=rows.reduce((t,r)=>t+r[2],0),max=rows.length?rows[0][2]:0;
+  $('brk').innerHTML=rows.length?rows.map(([c,o,v])=>`<div class="cb"><div class="cbh"><span>${esc(c)}</span><span class="amt">${eur(v)}<small>${Math.round(v/tot*100)}%</small></span></div><div class="cbar" style="width:${v/max*100}%"><i class="meal" style="flex:${o.meal}"></i><i class="bank" style="flex:${o.bank}"></i></div></div>`).join(''):'<p class="empty">Ainda não há despesas neste mês.</p>';
+}
+const CC={'Casa':'#8b5a3c','Passe':'#e3b341','Carro':'#d0694a','Poupanças':'#6fa98a','Subscrições':'#7aaed0','Extras':'#c9b8a8','Supermercado':'#c28f5e','Restaurantes':'#e08e45','Café e snacks':'#5e4636'};
+function renderDonut(k){
+  const by={};monthItems().filter(i=>i.card===k).forEach(i=>by[i.cat]=(by[i.cat]||0)+i.amount);
+  const rows=Object.entries(by).sort((a,b)=>b[1]-a[1]),tot=rows.reduce((t,r)=>t+r[1],0);
+  if(!tot){$('donut-'+k).innerHTML='<p class="empty">O gráfico aparece assim que adicionares a primeira despesa deste cartão no mês.</p>';return}
+  let acc=0;
+  const col=c=>CC[c]||'#999';
+  const arcs=rows.map(([c,v])=>{const p=v/tot*100;const s=`<circle r="15.9155" cx="21" cy="21" fill="none" stroke="${col(c)}" stroke-width="6" stroke-dasharray="${p} ${100-p}" stroke-dashoffset="${25-acc}"><title>${esc(c)}: ${eur(v)}</title></circle>`;acc+=p;return s}).join('');
+  const leg=rows.map(([c,v])=>{const p=v/tot*100;return `<li><i style="background:${col(c)}"></i><span>${esc(c)}</span><b>${p<1?'<1':Math.round(p)}%</b><span class="amt">${eur(v)}</span></li>`}).join('');
+  $('donut-'+k).innerHTML=`<svg viewBox="0 0 42 42" role="img" aria-label="Gastos por categoria"><circle r="15.9155" cx="21" cy="21" fill="none" stroke="var(--line)" stroke-width="6"/>${arcs}<text x="21" y="21" text-anchor="middle" font-size="3.3" font-weight="800" fill="currentColor">${eur(tot)}</text><text x="21" y="25.2" text-anchor="middle" font-size="2.4" fill="var(--mute)">total do mês</text></svg><ul class="dl">${leg}</ul>`;
+}
+function render(){renderMonth();renderCards();renderBreak();renderList();renderDonut('meal');renderDonut('bank')}
+
+function fillCats(){
+  const k=document.querySelector('input[name=card]:checked').value;
+  $('cat').innerHTML=CATS[k].map(c=>`<option>${c}</option>`).join('');
+}
+function shift(n){const [y,m]=ym.split('-').map(Number);const d=new Date(y,m-1+n,1);ym=d.getFullYear()+'-'+pad(d.getMonth()+1);render()}
+$('prev').onclick=()=>shift(-1);
+$('next').onclick=()=>shift(1);
+document.querySelectorAll('input[name=card]').forEach(r=>r.onchange=fillCats);
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{
+  filter=b.dataset.f;
+  document.querySelectorAll('#tabs button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  renderList();
+});
+$('f').onsubmit=e=>{
+  e.preventDefault();
+  const amount=parseFloat($('amount').value);
+  if(!(amount>0))return;
+  const date=$('date').value;
+  S.items.push({id:Date.now(),date,desc:$('desc').value.trim(),amount,card:document.querySelector('input[name=card]:checked').value,cat:$('cat').value});
+  save();ym=date.slice(0,7);
+  $('desc').value='';$('amount').value='';
+  render();$('date').value=date;$('desc').focus();
+};
+fillCats();render();
+
+// ask the browser to keep the saved data when the phone is short on space
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})}catch(e){}
+// installable app + works offline; only from a web address, never when opened as a local file
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
+}
+</script>
+</body>
+</html>
