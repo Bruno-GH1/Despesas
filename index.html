@@ -86,6 +86,8 @@ button{cursor:pointer}
 .acctin{display:flex;gap:12px;align-items:center;justify-content:space-between;font-size:.9rem}
 .tabsbtn{padding:6px 14px;border-radius:99px;border:1px solid var(--line);background:none}
 @media (max-width:720px){.loginf{grid-template-columns:1fr}}
+.altrow{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px}
+.linkbtn{background:none;border:0;padding:6px 0;color:var(--bank);text-decoration:underline;font-size:.9rem}
 @media (max-width:720px){.cards{grid-template-columns:1fr}.fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.fields label:first-child{grid-column:1/-1}.add{grid-column:1/-1}}
 @media (prefers-reduced-motion:reduce){.bar i{transition:none}}
 </style>
@@ -98,9 +100,11 @@ button{cursor:pointer}
     <p class="empty" style="padding:0 0 12px">Entra com a tua conta para ver as mesmas despesas no PC e no telemóvel.</p>
     <form id="login" class="loginf">
       <input id="l-email" type="email" autocomplete="username" placeholder="Email" required>
-      <input id="l-pass" type="password" autocomplete="current-password" placeholder="Palavra-passe" required>
-      <button class="add" type="submit">Entrar</button>
+      <input id="l-pass" type="password" autocomplete="current-password" placeholder="Palavra-passe" required minlength="6">
+      <input id="l-pass2" type="password" autocomplete="new-password" placeholder="Repete a palavra-passe" hidden minlength="6">
+      <button class="add" id="l-go" type="submit">Entrar</button>
     </form>
+    <div class="altrow"><button type="button" class="linkbtn" id="l-mode">Criar conta nova</button><button type="button" class="linkbtn" id="l-reset">Esqueci a palavra-passe</button></div>
   </div>
   <div id="acct-in" class="acctin" hidden><span id="acct-status"></span><button type="button" class="tabsbtn" id="logout">Sair</button></div>
   <p id="acct-msg" class="empty" role="status" style="padding:8px 0 0"></p>
@@ -402,13 +406,33 @@ function cloudInit(){
   }catch(e){fauth=null;fdb=null}
   showAcct();
 }
-const AUTHERR={'auth/invalid-credential':'Email ou palavra-passe errados.','auth/wrong-password':'Email ou palavra-passe errados.','auth/user-not-found':'Email ou palavra-passe errados.','auth/invalid-email':'Esse email não é válido.','auth/too-many-requests':'Demasiadas tentativas. Espera um pouco e tenta de novo.','auth/network-request-failed':'Sem ligação à internet.'};
+const AUTHERR={'auth/email-already-in-use':'Já existe uma conta com esse email. Usa "Entrar".','auth/weak-password':'A palavra-passe tem de ter pelo menos 6 caracteres.','auth/missing-email':'Escreve primeiro o teu email.','auth/invalid-credential':'Email ou palavra-passe errados.','auth/wrong-password':'Email ou palavra-passe errados.','auth/user-not-found':'Email ou palavra-passe errados.','auth/invalid-email':'Esse email não é válido.','auth/too-many-requests':'Demasiadas tentativas. Espera um pouco e tenta de novo.','auth/network-request-failed':'Sem ligação à internet.'};
+let creating=false;
+function setMode(c){
+  creating=c;
+  $('l-pass2').hidden=!c;$('l-pass2').required=c;
+  $('l-go').textContent=c?'Criar conta':'Entrar';
+  $('l-mode').textContent=c?'Já tenho conta':'Criar conta nova';
+  $('l-pass').autocomplete=c?'new-password':'current-password';
+  $('acct-msg').textContent='';
+}
+$('l-mode').onclick=()=>setMode(!creating);
+$('l-reset').onclick=()=>{
+  if(!fauth)return;
+  const em=$('l-email').value.trim();
+  if(!em){$('acct-msg').textContent=AUTHERR['auth/missing-email'];return}
+  fauth.sendPasswordResetEmail(em)
+    .then(()=>{$('acct-msg').textContent='Enviei um email para '+em+' com o link para escolheres uma palavra-passe nova (vê também o spam).'})
+    .catch(err=>{$('acct-msg').textContent=AUTHERR[err&&err.code]||'Não consegui enviar o email. Tenta de novo.'});
+};
 $('login').onsubmit=e=>{
   e.preventDefault();
   if(!fauth)return;
-  $('acct-msg').textContent='A entrar…';
-  fauth.signInWithEmailAndPassword($('l-email').value.trim(),$('l-pass').value)
-    .then(()=>{$('l-pass').value='';$('acct-msg').textContent=''})
+  const em=$('l-email').value.trim(),pw=$('l-pass').value;
+  if(creating&&pw!==$('l-pass2').value){$('acct-msg').textContent='As duas palavras-passe não são iguais.';return}
+  $('acct-msg').textContent=creating?'A criar a conta…':'A entrar…';
+  (creating?fauth.createUserWithEmailAndPassword(em,pw):fauth.signInWithEmailAndPassword(em,pw))
+    .then(()=>{$('l-pass').value='';$('l-pass2').value='';setMode(false);$('acct-msg').textContent=''})
     .catch(err=>{$('acct-msg').textContent=AUTHERR[err&&err.code]||'Não foi possível entrar. Tenta de novo.'});
 };
 $('logout').onclick=()=>{if(fauth)fauth.signOut().then(()=>{$('acct-msg').textContent='Saíste da conta. Os dados continuam guardados neste aparelho.'})};

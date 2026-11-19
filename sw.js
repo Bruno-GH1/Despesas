@@ -1,6 +1,6 @@
 /* Keeps the app's own files so it opens instantly and works without a connection.
    Pills, history and photos are not touched here: they live in the phone's own storage. */
-var CACHE = "despesas-v6";
+var CACHE = "despesas-v7";
 var SHELL = ["./", "index.html", "logo.png", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", function (e) {
